@@ -12,7 +12,7 @@ RUN apt-get update && \
     gfortran \
     zip \
     gcc && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*	
+    rm -rf /var/lib/apt/lists/*
 
 # R packages: : https://github.com/jupyter/docker-stacks/blob/master/r-notebook/Dockerfile
 USER $NB_USER
@@ -35,7 +35,7 @@ RUN conda config --add channels r && \
     'r-caret=6.0*' \
     'r-rcurl=1.95*' \
     'r-randomforest=4.6*' && conda clean -tipsy
-    
+
 # Java JDK and rJava (conda)
 USER $NB_USER
 RUN conda install --quiet --yes \
@@ -45,11 +45,16 @@ RUN conda install --quiet --yes \
 
 # Mallet
 USER root
-RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8RC3.zip && \
-    unzip mallet-2.0.8RC3.zip && \
-    cp mallet-2.0.8RC3/bin/* /usr/bin/ && \
-    rm mallet-2.0.8RC3.zip && \
-    rm -r mallet-2.0.8RC3
+# RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8RC3.zip && \
+#    unzip mallet-2.0.8RC3.zip && \
+#    cp mallet-2.0.8RC3/bin/* /usr/bin/ && \
+#    rm mallet-2.0.8RC3.zip && \
+#    rm -r mallet-2.0.8RC3
+RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.7.zip && \
+    unzip mallet-2.0.7.zip && \
+    cp mallet-2.0.7/bin/* /usr/bin/ && \
+    rm mallet-2.0.7.zip && \
+    rm -r mallet-2.0.7
 
 # dfrtopics dependencies
 USER $NB_USER
@@ -60,5 +65,3 @@ RUN conda install --quiet --yes 'r-lubridate' && \
 USER $NB_USER
 RUN Rscript -e 'install.packages("mallet", repos="http://cran.rstudio.com/")'
 RUN Rscript -e 'devtools::install_github("agoldst/dfrtopics", quiet = TRUE)'
-
-
