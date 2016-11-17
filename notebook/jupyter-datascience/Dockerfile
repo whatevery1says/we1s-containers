@@ -1,59 +1,33 @@
-# Copyright (c) Jupyter Development Team.
-# Distributed under the terms of the Modified BSD License.
-FROM jupyter/scipy-notebook
+FROM jupyter/datascience-notebook
+# https://github.com/jupyter/docker-stacks/blob/master/datascience-notebook/Dockerfile
 
-MAINTAINER Jupyter Project <jupyter@googlegroups.com>
+MAINTAINER Jeremy Douglass <jeremydouglass@gmail.com>
 
+# zip -- for dfr-browser export
 USER root
-
-# R pre-requisites
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    fonts-dejavu \
-    gfortran \
-    gcc && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    zip && \
+    rm -rf /var/lib/apt/lists/*	
 
-# Julia dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    julia \
-    libnettle4 && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
+# Java JDK and rJava (conda) -- for mallet
 USER $NB_USER
+RUN conda install --quiet --yes \
+    -c bioconda 'java-jdk'
+RUN conda install --quiet --yes \
+    -c edurand 'r-rjava'
 
-# R packages including IRKernel which gets installed globally.
-RUN conda config --add channels r && \
-    conda install --quiet --yes \
-    'rpy2=2.7*' \
-    'r-base=3.2*' \
-    'r-irkernel=0.5*' \
-    'r-plyr=1.8*' \
-    'r-devtools=1.9*' \
-    'r-dplyr=0.4*' \
-    'r-ggplot2=1.0*' \
-    'r-tidyr=0.3*' \
-    'r-shiny=0.12*' \
-    'r-rmarkdown=0.8*' \
-    'r-forecast=5.8*' \
-    'r-stringr=0.6*' \
-    'r-rsqlite=1.0*' \
-    'r-reshape2=1.4*' \
-    'r-nycflights13=0.1*' \
-    'r-caret=6.0*' \
-    'r-rcurl=1.95*' \
-    'r-randomforest=4.6*' && conda clean -tipsy
+# Mallet
+USER root
+RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8RC3.zip && \
+    unzip mallet-2.0.8RC3.zip && \
+    cp mallet-2.0.8RC3/bin/* /usr/bin/ && \
+    rm mallet-2.0.8RC3.zip && \
+    rm -r mallet-2.0.8RC3
 
-# Install IJulia packages as jovyan and then move the kernelspec out
-# to the system share location. Avoids problems with runtime UID change not
-# taking effect properly on the .local folder in the jovyan home dir.
-RUN julia -e 'Pkg.add("IJulia")' && \
-    mv /home/$NB_USER/.local/share/jupyter/kernels/* $CONDA_DIR/share/jupyter/kernels/ && \
-    chmod -R go+rx $CONDA_DIR/share/jupyter && \
-    rm -rf /home/$NB_USER/.local/share
-
-# Show Julia where conda libraries are
-# Add essential packages
-RUN echo "push!(Sys.DL_LOAD_PATH, \"$CONDA_DIR/lib\")" > /home/$NB_USER/.juliarc.jl && \
-    julia -e 'Pkg.add("Gadfly")' && julia -e 'Pkg.add("RDatasets")' && julia -F -e 'Pkg.add("HDF5")'
+# dfrtopics R dependencies
+USER $NB_USER
+RUN conda install --quiet --yes 'r-lubridate' && \
+    conda install --quiet --yes -c bioconda 'r-readr'
+RUN Rscript -e 'install.packages("mallet", repos="http://cran.rstudio.com/")'
+RUN Rscript -e 'devtools::install_github("agoldst/dfrtopics", quiet = TRUE)'
