@@ -22,8 +22,13 @@ USER root
 RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8RC3.zip && \
     unzip mallet-2.0.8RC3.zip && \
     cp mallet-2.0.8RC3/bin/* /usr/bin/ && \
-    rm mallet-2.0.8RC3.zip && \
-    rm -r mallet-2.0.8RC3
+    cp mallet-2.0.8RC3/class/* /usr/class/ && \
+    chown -R $NB_USER:users /usr/class/ && \
+    mkdir -p /usr/lib && \
+    cp mallet-2.0.8RC3/lib/mallet-deps.jar /usr/lib/mallet-deps.jar && \
+    chown -R $NB_USER:users /usr/lib/mallet-deps.jar
+    # rm mallet-2.0.8RC3.zip && \
+    # rm -r mallet-2.0.8RC3
 
 # dfrtopics R dependencies
 USER $NB_USER
