@@ -37,3 +37,7 @@ RUN conda install --quiet --yes 'r-lubridate' && \
     conda install --quiet --yes -c bioconda 'r-readr'
 RUN Rscript -e 'install.packages("mallet", repos="http://cran.rstudio.com/")'
 RUN Rscript -e 'devtools::install_github("agoldst/dfrtopics", quiet = TRUE)'
+
+# 2_clean_data dependencies
+RUN pip2 install ftfy
+RUN pip3 install ftfy
